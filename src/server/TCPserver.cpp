@@ -1,7 +1,5 @@
 #include "TCPserver.h"
 
-using namespace std;
-
 TCPserver::TCPserver(int port){
 
   /* create an endpoint for comunication and returns a file descriptor */
@@ -10,7 +8,7 @@ TCPserver::TCPserver(int port){
   /* setup the sockaddr_in struct */
   memset(&_server_addr, 0, sizeof(_server_addr));
   _server_addr.sin_family = AF_INET;
-  _server_addr.sin_addr.s_addr = hton1(INADDR_ANY);
+  _server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
   _server_addr.sin_port = htons(port);
 
   /* let the reuse of the port after killing the process */
@@ -40,25 +38,25 @@ void TCPserver::recv_conn(){
 
     /* accept the client connection */
     _client_sock = accept(_server_sock, (struct sockaddr*)&_client_addr, &sock_size);
-    cout << "[*] Conection received from ", inet_ntoa(_client_addr.sin_addr));
+    cout << "[*] Conection received from " << inet_ntoa(_client_addr.sin_addr) << endl;
 
     /* to pass more than one arg for a thread routine */
     arg_struct args;
     args.arg1 = _client_sock;
-    args.arg2 = inet_ntoa(_client_addr.sin_addr);
+    args.arg2 = string(inet_ntoa(_client_addr.sin_addr));
 
     /* open a thread and assign to the client_handler routine */
-    pthread_create(&_server_thread, NULL, %client_handler, (void *)&args);
+    pthread_create(&_server_thread, NULL, &client_handler, (void *)&args);
   }
 }
 
-void *client_handler(void *a){
+void *TCPserver::client_handler(void *a){
 
-  arg_struct *args = a;
+  arg_struct *args = (arg_struct *)a;
 
   int n;
   int client_sock = (long)args->arg1;
-  int addr = (long)args->arg2;
+  string addr = (string)args->arg2;
   char buffer[MAXPACKETSIZE];
 
   /* mark the thread as detached to release its resources automatically when it terminates */
@@ -80,7 +78,7 @@ void *client_handler(void *a){
 
 void TCPserver::send_msg(string msg){
 
-  _n = write(_client_sock, msg.c_str(), msg.length(), 0);
+  _n = send(_client_sock, msg.c_str(), msg.length(), 0);
 
   if(_n != msg.length()){
 
@@ -92,7 +90,7 @@ void TCPserver::send_msg(string msg){
 
 void TCPserver::clean(){
 
-  memset(_msg, 0, MAXPACKETSIZE);
+  memset(_buffer, 0, MAXPACKETSIZE);
   _n = 0;
 }
 

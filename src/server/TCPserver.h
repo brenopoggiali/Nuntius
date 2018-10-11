@@ -2,12 +2,11 @@
 #define TCP_SERVER_H
 
 #include <iostream>
-#include <vector>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h> 
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <string.h>
@@ -16,10 +15,12 @@
 
 #define MAXPACKETSIZE 4096
 
+using namespace std;
+
 struct arg_struct {
-  
-  auto arg1;
-  auto arg2;
+
+  int arg1;
+  string arg2;
 };
 
 class TCPserver{
@@ -37,9 +38,11 @@ private:
 public:
   TCPserver(int port);
   void recv_conn();
-  void send_msg();
+  void send_msg(string msg);
   void detach();
   void clean();
 
-  static void *client_handler(void *args);
+  static void *client_handler(void *a);
 };
+
+#endif
