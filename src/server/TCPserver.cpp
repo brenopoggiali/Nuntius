@@ -63,9 +63,12 @@ void *TCPserver::client_handler(void *a){
   pthread_detach(pthread_self());
   while(true){
 
+    /* clear the buffer to receive the msg */
+    memset(buffer, 0, MAXPACKETSIZE);
+
     /* receive the client message */
     n = recv(client_sock, buffer, MAXPACKETSIZE, 0);
-    if(n == 0){
+    if(n < 0){
 
       close(client_sock);
       break;

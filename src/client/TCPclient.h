@@ -13,6 +13,8 @@
 #include <netdb.h>
 #include <netdb.h>
 
+#define MAXPACKETSIZE 4096
+
 using namespace std;
 
 class TCPclient{
@@ -22,12 +24,19 @@ private:
   int _port;
   int _n;
   string _addr;
+  string _nickname;
+  string _buffer;
   struct sockaddr_in _server_addr;
+  pthread_t _receiver_thread;
 
 public:
   TCPclient(string addr, int port);
   void connect_serv();
   void handler();
+  void detach();
+  bool send_msg();
+
+  static void *msg_receiver(void *a);
 
 };
 #endif
