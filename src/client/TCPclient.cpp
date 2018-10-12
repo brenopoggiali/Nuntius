@@ -13,7 +13,7 @@ TCPclient::TCPclient(string addr, int port, string nickname){
 
   memset(&_server_addr, 0, sizeof(_server_addr));
   _server_addr.sin_family = AF_INET;
-  _server_addr.sin_addr.s_addr = inet_addr(_addr);
+  _server_addr.sin_addr.s_addr = inet_addr(_addr.c_str());
   _server_addr.sin_port = htons(_port);
 }
 
@@ -21,10 +21,10 @@ void TCPclient::connect_serv(){
 
   /* if we already have an incoming connection */
   if(_m_sock != INVALID_SOCKET){
-    closesocket(_m_sock);
+    close(_m_sock);
   }
 
-  _m_sock = socket(AD_INET, SOCK_STREAM, 0);
+  _m_sock = socket(AF_INET, SOCK_STREAM, 0);
 
   cout << "[*] Trying to connect to the server at " << _addr << ":" << _port << endl;
 
@@ -33,6 +33,8 @@ void TCPclient::connect_serv(){
     cout << "[*] ERROR: Could not connect to the server" << endl;
     exit(EXIT_SUCCESS);
   }
+
+  cout << "[*] Connection established, waiting for incoming messages..." << endl;
 
   /* create the thread to receive messages from server */
   pthread_create(&_receiver_thread, NULL, &msg_receiver, (void *)_m_sock);
@@ -54,11 +56,12 @@ void *TCPclient::msg_receiver(void *a){
     n = recv(m_sock, buff, MAXPACKETSIZE, 0);
     if(n < 0){
 
-      cout << "ERROR receiving message from server, please restart the client" << end;
+      cout << "ERROR receiving message from server, please restart the client" << endl;
       break;
     }
     cout << string(buff) << endl;
   }
+  return 0;
 }
 
 bool TCPclient::send_msg(){
@@ -69,7 +72,7 @@ bool TCPclient::send_msg(){
       return true;
     }
   }
-  return false
+  return false;
 }
 
 void TCPclient::handler(){
@@ -92,7 +95,7 @@ void TCPclient::handler(){
   }
 }
 
-void TCPclient::detach(string msg=""){
+void TCPclient::detach(string msg){
 
   if(msg != "")
     cout << msg << endl;

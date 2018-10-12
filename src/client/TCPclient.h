@@ -13,7 +13,10 @@
 #include <netdb.h>
 #include <netdb.h>
 
+//dps fazer enum
 #define MAXPACKETSIZE 4096
+#define INVALID_SOCKET -1
+#define SOCKET_ERROR -1
 
 using namespace std;
 
@@ -30,10 +33,10 @@ private:
   pthread_t _receiver_thread;
 
 public:
-  TCPclient(string addr, int port);
+  TCPclient(string addr, int port, string nickname);
   void connect_serv();
   void handler();
-  void detach();
+  void detach(string msg="");
   bool send_msg();
 
   static void *msg_receiver(void *a);
