@@ -1,4 +1,4 @@
-#include "TCPclient.h"
+#include "client/client.h"
 
 using namespace std;
 
@@ -51,7 +51,7 @@ void *TCPclient::msg_receiver(void *a){
   pthread_detach(pthread_self());
 
   while(true){
-    
+
     memset(buff, 0, MAXPACKETSIZE);
     n = recv(m_sock, buff, MAXPACKETSIZE, 0);
     if(n < 0){

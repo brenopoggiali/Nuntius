@@ -1,9 +1,9 @@
-#include "../src/client/TCPclient.h"
+#include "client/client.h"
 
 using namespace std;
 
 int main(int argc, char *argv[]){
-  
+
   if(argc < 4){
     cout << "Usage: ./client [server_ip] [port] [nickname]" << endl;
     exit(EXIT_SUCCESS);

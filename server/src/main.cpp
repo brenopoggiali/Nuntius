@@ -1,4 +1,4 @@
-#include "../src/server/TCPserver.h"
+#include "server/server.h"
 
 using namespace std;
 
