@@ -4,10 +4,10 @@ Implementacao simples de um chat usando o protocolo de comunicação IRC (Intern
 #Workflow
 Adotaremos o seguinte processo para desenvolvimento do projeto:
 
-	Escolha uma funcionalidade, alteração, correção de bug para resolver (estarão no Trello)
-	Crie um novo branch à partir do master com o comando:
+Escolha uma funcionalidade, alteração, correção de bug para resolver (estarão no Trello)
+Crie um novo branch à partir do master com o comando:
 		git checkout -b <NOME_DO_BRANCH>
-	Codifique a nova funcionalidade / alteração no branch criado com os comandos:
+Codifique a nova funcionalidade / alteração no branch criado com os comandos:
 		git commit -m <MENSAGEM_COMMIT>
 		git push
 Ao desenvolver certifique-se de testar todas as funcionalidades adicionadas
