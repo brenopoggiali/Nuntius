@@ -2,7 +2,7 @@
 
 using namespace std;
 
-TCPclient::TCPclient(string addr, int port, string nickname){
+TCPclient::TCPclient(string addr, int port, string nickname, string channel_name){
 
   /* setup the attributes */
   _m_sock = INVALID_SOCKET;
@@ -10,6 +10,7 @@ TCPclient::TCPclient(string addr, int port, string nickname){
   _port = port;
   _nickname = nickname;
   _buffer = "";
+  _channel_name = channel_name;
 
   memset(&_server_addr, 0, sizeof(_server_addr));
   _server_addr.sin_family = AF_INET;
@@ -76,7 +77,12 @@ bool TCPclient::send_msg(){
 }
 
 void TCPclient::handler(){
+  string client_info = _nickname + "-" + _channel_name;
 
+  //sending client info
+  send(_m_sock, client_info.c_str(), strlen(client_info.c_str()), 0);
+
+  
   while(getline(cin, _buffer)){
 
     //depois tenho q descontar os bytes de cabecalho no MAXPACKETSIZE (tipo: MAXP - bytes_cabecalho = new MAXP)
