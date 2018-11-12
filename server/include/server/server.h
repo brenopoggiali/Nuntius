@@ -12,10 +12,15 @@
 #include <string.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <map>
+#include <memory>
+
+#include "server/channel.h"
+#include "server/client.h"
 
 #define MAXPACKETSIZE 4096
 
-using namespace std;
+typedef shared_ptr<channel> channel_ptr;
 
 struct arg_struct {
 
@@ -27,22 +32,19 @@ class TCPserver{
 
 private:
   int _server_sock;
-  int _client_sock;
   int _n;
-  int _pid;
   struct sockaddr_in _server_addr;
-  struct sockaddr_in _client_addr;
   pthread_t _server_thread;
   char _buffer[MAXPACKETSIZE];
+  std::map<std::string, channel_ptr> _channels;
 
 public:
   TCPserver(int port);
+  ~TCPserver();
   void recv_conn();
-  void send_msg(string msg);
-  void detach();
-  void clean();
+  channel_ptr add_channel(std::string name);
 
-  static void *client_handler(void *a);
+  void* client_handler(void *a);
 };
 
 #endif
