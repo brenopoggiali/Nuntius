@@ -1,6 +1,7 @@
 #include "server/server.h"
 
-TCPserver::TCPserver(int port){
+TCPserver::TCPserver(int port)
+{
 
   _server_sock = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -10,35 +11,39 @@ TCPserver::TCPserver(int port){
   _server_addr.sin_port = htons(port);
 
   int reuse = 1;
-  setsockopt(_server_sock, SOL_SOCKET, SO_REUSEADDR, (const char*)&reuse, sizeof(reuse));
+  setsockopt(_server_sock, SOL_SOCKET, SO_REUSEADDR, (const char *)&reuse, sizeof(reuse));
 
-  #ifdef SO_REUSEPORT
-    setsockopt(_server_sock, SOL_SOCKET, SO_REUSEPORT, (const char*)&reuse, sizeof(reuse));
-  #endif
+#ifdef SO_REUSEPORT
+  setsockopt(_server_sock, SOL_SOCKET, SO_REUSEPORT, (const char *)&reuse, sizeof(reuse));
+#endif
 
   bind(_server_sock, (struct sockaddr *)&_server_addr, sizeof(struct sockaddr));
 
   listen(_server_sock, 5);
 
   std::cout << "[*] Listening on " << port << " ..." << std::endl;
-
 }
 
-TCPserver::~TCPserver(){
+TCPserver::~TCPserver()
+{
 
-  close(_server_sock);
+  close(this->_server_sock);
 }
 
-void TCPserver::recv_conn(){
+void TCPserver::recv_conn()
+{
 
-  while(true){
+  while (true)
+  {
 
-    auto new_client = std::make_shared<TCPclient>();
+    TCPclient new_client = TCPclient();
 
     socklen_t addr_size = sizeof(new_client->_client_addr);
 
-    new_client->_client_sock = accept(this->_server_sock, (struct sockaddr*)&new_client->_client_addr, &addr_size);
-    cout << "[*] Conection received from " << inet_ntoa(new_client->_client_addr.sin_addr) << endl;
+    new_client._client_sock = accept(this->_server_sock, (struct sockaddr *)&new_client._client_addr, &addr_size);
+    cout << "[*] Conection received from " << inet_ntoa(new_client._client_addr.sin_addr) << std::endl;
+
+    std::thread(&TCPserver::client_handler, this, std::ref(new_client));
 
     //aqui preciso passar nosso shared_ptr de cliente para outra thread, nao sei como posso fazer isso, pensar sobre depois...
     //alem disso preciso passar um ponteiro (normal eu acho para a classe do server para q eu possa criar os channels de dentro da thread
@@ -47,29 +52,59 @@ void TCPserver::recv_conn(){
   }
 }
 
+void *TCPserver::client_handler(TCPclient &client)
+{
 
-void *TCPserver::client_handler(void *a){
+  //first receives the nickname;servername
+  try
+  {
+    std::string first_msg = client.recv_msg();
+  }
+  catch (const std::exception &e)
+  {
+    //preciso fazer um logger dpois
+    std::cout << e.what() << std::endl;
+  }
 
-  auto *args = (arg_struct *)a;
+  int pos = first_msg.find(";");
+  std::string nickname = first_msg.substr(0, pos);
+  std::string channel_name = first_msg.substr(pos + 1, first_msg.length());
 
-  int n;
-  int client_sock = (long)args->arg1;
-  string addr = (string)args->arg2;
-  char buffer[MAXPACKETSIZE];
-
-  pthread_detach(pthread_self());
-  while(true){
-
-    memset(buffer, 0, MAXPACKETSIZE);
-
-    n = recv(client_sock, buffer, MAXPACKETSIZE, 0);
-    if(n < 0){
-
-      close(client_sock);
-      break;
+  client._nickname = nickname;
+  client._channel_name = channel_name;
+  if (this->exists_channel(channel_name))
+  {
+    if (this->_channels[client._channel_name].can_recv_client())
+    {
+      this->_channels[client._channel_name].add_client(client);
     }
-    buffer[n] = 0;
-    cout << "[" << addr << "]: " << string(buffer) << endl;
+    else
+    {
+      //channel is full
+      //depoist colocar em constantes essas mensagens de troca entre client e server
+      client.send_msg("FULL");
+    }
+  }
+  else
+  {
+    //channel doesn't exist
+    this->add_channel(client._channel_name);
+    this->_channels[client._channel_name].add_client(client);
+  }
+
+  while (true)
+  {
+
+    try
+    {
+      std::string msg = client.recv_msg();
+      this->_channels[client._channel_name].send_msg(msg, client._channel_name);
+    }
+    catch (const std::exception &e)
+    {
+      //preciso pensar em um melhor tratamento de errors
+      std::cout << e.what() << std::endl;
+    }
   }
   return 0;
 }

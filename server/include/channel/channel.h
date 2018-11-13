@@ -22,6 +22,7 @@ class channel{
 
         bool add_client(client_ptr& client);
         bool remove_client(std::string nickname);
+        bool can_recv_client();
         int get_num_clients();
         void send_msg(std::string& msg, std::string nickname);
 

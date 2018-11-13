@@ -18,7 +18,7 @@
 #include "server/channel.h"
 #include "server/client.h"
 
-#define MAXPACKETSIZE 4096
+#define MAX_LENGTH 4096
 
 typedef shared_ptr<channel> channel_ptr;
 
@@ -35,13 +35,13 @@ private:
   int _n;
   struct sockaddr_in _server_addr;
   pthread_t _server_thread;
-  char _buffer[MAXPACKETSIZE];
   std::map<std::string, channel_ptr> _channels;
 
 public:
   TCPserver(int port);
   ~TCPserver();
   void recv_conn();
+  bool exists_channel(std::string name);
   channel_ptr add_channel(std::string name);
 
   void* client_handler(void *a);
