@@ -29,11 +29,12 @@ private:
   string _addr;
   string _nickname;
   string _buffer;
+  string _channel_name;
   struct sockaddr_in _server_addr;
   pthread_t _receiver_thread;
 
 public:
-  TCPclient(string addr, int port, string nickname);
+  TCPclient(string addr, int port, string nickname, string channel_name);
   void connect_serv();
   void handler();
   void detach(string msg="");
