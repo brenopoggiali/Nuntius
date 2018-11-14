@@ -59,6 +59,7 @@ void TCPserver::add_channel(std::string& name){
 
 void *TCPserver::client_handler(TCPclient &client)
 {
+
   //first receives the nickname;servername
   std::string first_msg;
 
@@ -101,11 +102,10 @@ void *TCPserver::client_handler(TCPclient &client)
 
   while (true)
   {
-
     try
     {
       std::string msg = client.recv_msg();
-      this->_channels.find(client._channel_name)->second.send_msg(msg, client._channel_name);
+      this->_channels.find(client._channel_name)->second.send_msg(msg, client._nickname);
     }
     catch (const std::exception &e)
     { 

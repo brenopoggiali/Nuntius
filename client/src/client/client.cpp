@@ -77,7 +77,7 @@ bool TCPclient::send_msg(){
 }
 
 void TCPclient::handler(){
-  string client_info = _nickname + "-" + _channel_name;
+  string client_info = _nickname + ";" + _channel_name;
 
   //sending client info
   send(_m_sock, client_info.c_str(), strlen(client_info.c_str()), 0);
