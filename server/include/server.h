@@ -11,22 +11,14 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <pthread.h>
 #include <map>
 #include <memory>
+#include <thread>
 
-#include "server/channel.h"
-#include "server/client.h"
+#include "channel.h"
+#include "client.h"
 
 #define MAX_LENGTH 4096
-
-typedef shared_ptr<channel> channel_ptr;
-
-struct arg_struct {
-
-  int arg1;
-  string arg2;
-};
 
 class TCPserver{
 
@@ -34,17 +26,16 @@ private:
   int _server_sock;
   int _n;
   struct sockaddr_in _server_addr;
-  pthread_t _server_thread;
-  std::map<std::string, channel_ptr> _channels;
+  std::map<std::string, channel> _channels;
 
 public:
   TCPserver(int port);
   ~TCPserver();
   void recv_conn();
-  bool exists_channel(std::string name);
-  channel_ptr add_channel(std::string name);
+  bool exists_channel(std::string& name);
+  void add_channel(std::string& name);
 
-  void* client_handler(void *a);
+  void* client_handler(TCPclient &client);
 };
 
 #endif

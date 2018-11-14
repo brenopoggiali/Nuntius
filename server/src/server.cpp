@@ -1,4 +1,4 @@
-#include "server/server.h"
+#include "server.h"
 
 TCPserver::TCPserver(int port)
 {
@@ -38,27 +38,33 @@ void TCPserver::recv_conn()
 
     TCPclient new_client = TCPclient();
 
-    socklen_t addr_size = sizeof(new_client->_client_addr);
+    socklen_t addr_size = sizeof(new_client._client_addr);
 
-    new_client._client_sock = accept(this->_server_sock, (struct sockaddr *)&new_client._client_addr, &addr_size);
-    cout << "[*] Conection received from " << inet_ntoa(new_client._client_addr.sin_addr) << std::endl;
+    new_client._socket = accept(this->_server_sock, (struct sockaddr *)&new_client._client_addr, &addr_size);
+    std::cout << "[*] Conection received from " << inet_ntoa(new_client._client_addr.sin_addr) << std::endl;
 
-    std::thread(&TCPserver::client_handler, this, std::ref(new_client));
-
-    //aqui preciso passar nosso shared_ptr de cliente para outra thread, nao sei como posso fazer isso, pensar sobre depois...
-    //alem disso preciso passar um ponteiro (normal eu acho para a classe do server para q eu possa criar os channels de dentro da thread
-    //uma possivel solucao seria usar a boost/thread.h mas nao sei como funciona muito bem
-    pthread_create(&_server_thread, NULL, &client_handler, (void *)&new_client);
+    std::thread t(&TCPserver::client_handler, this, std::ref(new_client));
+    t.detach();
   }
+}
+
+bool TCPserver::exists_channel(std::string& name){
+  return this->_channels.find(name) != this->_channels.end();
+}
+
+void TCPserver::add_channel(std::string& name){
+  channel new_channel = channel(name);
+  this->_channels.insert(std::make_pair(name, new_channel));
 }
 
 void *TCPserver::client_handler(TCPclient &client)
 {
-
   //first receives the nickname;servername
+  std::string first_msg;
+
   try
   {
-    std::string first_msg = client.recv_msg();
+    first_msg = client.recv_msg();
   }
   catch (const std::exception &e)
   {
@@ -74,22 +80,23 @@ void *TCPserver::client_handler(TCPclient &client)
   client._channel_name = channel_name;
   if (this->exists_channel(channel_name))
   {
-    if (this->_channels[client._channel_name].can_recv_client())
+    if (this->_channels.find(client._channel_name)->second.can_recv_client())
     {
-      this->_channels[client._channel_name].add_client(client);
+      this->_channels.find(client._channel_name)->second.add_client(client);
     }
     else
     {
       //channel is full
       //depoist colocar em constantes essas mensagens de troca entre client e server
-      client.send_msg("FULL");
+      std::string FULL = "FULL";
+      client.send_msg(FULL);
     }
   }
   else
   {
     //channel doesn't exist
     this->add_channel(client._channel_name);
-    this->_channels[client._channel_name].add_client(client);
+    this->_channels.find(client._channel_name)->second.add_client(client);
   }
 
   while (true)
@@ -98,12 +105,14 @@ void *TCPserver::client_handler(TCPclient &client)
     try
     {
       std::string msg = client.recv_msg();
-      this->_channels[client._channel_name].send_msg(msg, client._channel_name);
+      this->_channels.find(client._channel_name)->second.send_msg(msg, client._channel_name);
     }
     catch (const std::exception &e)
-    {
+    { 
+      this->_channels.find(client._channel_name)->second.remove_client(client._nickname);
       //preciso pensar em um melhor tratamento de errors
       std::cout << e.what() << std::endl;
+      break;
     }
   }
   return 0;

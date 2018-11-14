@@ -1,6 +1,6 @@
-#include "server/client.h"
+#include "client.h"
 
-TCPclient::TCPclient() : {}
+TCPclient::TCPclient(){};
 
 TCPclient::~TCPclient(){
   this->detach();
@@ -9,13 +9,12 @@ TCPclient::~TCPclient(){
 void TCPclient::send_msg(std::string& msg){
   this->_n = send(this->_socket, msg.c_str(), msg.length(), 0);
   if(this->_n != msg.length()){
-
-    std::cout << "ERROR fail sending message!" << std::endl;
     this->detach();
+    throw Exception("Fail sending message to client");    
   }
 }
 
-std::string TCPclient revc_msg(){
+std::string TCPclient::recv_msg(){
   this->clean();
   this->_n = recv(this->_socket, this->_buffer, MAX_LENGTH, 0);
   if(this->_n < 0){
