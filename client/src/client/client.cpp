@@ -2,7 +2,8 @@
 
 using namespace std;
 
-TCPclient::TCPclient(string addr, int port, string nickname, string channel_name){
+TCPclient::TCPclient(string addr, int port, string nickname, string channel_name)
+{
 
   /* setup the attributes */
   _m_sock = INVALID_SOCKET;
@@ -18,10 +19,12 @@ TCPclient::TCPclient(string addr, int port, string nickname, string channel_name
   _server_addr.sin_port = htons(_port);
 }
 
-void TCPclient::connect_serv(){
+void TCPclient::connect_serv()
+{
 
   /* if we already have an incoming connection */
-  if(_m_sock != INVALID_SOCKET){
+  if (_m_sock != INVALID_SOCKET)
+  {
     close(_m_sock);
   }
 
@@ -30,7 +33,8 @@ void TCPclient::connect_serv(){
   cout << "[*] Trying to connect to the server at " << _addr << ":" << _port << endl;
 
   _n = connect(_m_sock, (struct sockaddr *)&_server_addr, sizeof(_server_addr));
-  if(_n == SOCKET_ERROR){
+  if (_n == SOCKET_ERROR)
+  {
     cout << "[*] ERROR: Could not connect to the server" << endl;
     exit(EXIT_SUCCESS);
   }
@@ -39,10 +43,10 @@ void TCPclient::connect_serv(){
 
   /* create the thread to receive messages from server */
   pthread_create(&_receiver_thread, NULL, &msg_receiver, (void *)_m_sock);
-
 }
 
-void *TCPclient::msg_receiver(void *a){
+void *TCPclient::msg_receiver(void *a)
+{
 
   int m_sock = (long)a;
   int n;
@@ -51,11 +55,13 @@ void *TCPclient::msg_receiver(void *a){
   /* mark the thread as detached to release its resources automatically when it terminates */
   pthread_detach(pthread_self());
 
-  while(true){
+  while (true)
+  {
 
     memset(buff, 0, MAXPACKETSIZE);
     n = recv(m_sock, buff, MAXPACKETSIZE, 0);
-    if(n < 0){
+    if (n < 0)
+    {
 
       cout << "ERROR receiving message from server, please restart the client" << endl;
       break;
@@ -65,10 +71,13 @@ void *TCPclient::msg_receiver(void *a){
   return 0;
 }
 
-bool TCPclient::send_msg(){
+bool TCPclient::send_msg()
+{
 
-  if(_m_sock != INVALID_SOCKET){
-    if(send(_m_sock, _buffer.c_str(), strlen(_buffer.c_str()), 0) >= 0){
+  if (_m_sock != INVALID_SOCKET)
+  {
+    if (send(_m_sock, _buffer.c_str(), strlen(_buffer.c_str()), 0) >= 0)
+    {
 
       return true;
     }
@@ -76,34 +85,38 @@ bool TCPclient::send_msg(){
   return false;
 }
 
-void TCPclient::handler(){
+void TCPclient::handler()
+{
   string client_info = _nickname + ";" + _channel_name;
 
   //sending client info
   send(_m_sock, client_info.c_str(), strlen(client_info.c_str()), 0);
 
-  
-  while(getline(cin, _buffer)){
+  while (getline(cin, _buffer))
+  {
 
     //depois tenho q descontar os bytes de cabecalho no MAXPACKETSIZE (tipo: MAXP - bytes_cabecalho = new MAXP)
-    if(_buffer.length() >= MAXPACKETSIZE){
+    if (_buffer.length() >= MAXPACKETSIZE)
+    {
       cout << "ERROR message must be less than " << MAXPACKETSIZE << " bytes!" << endl;
-    }else{
-      if(_buffer == "exit")
+    }
+    else
+    {
+      if (_buffer == "exit")
         this->detach();
 
-      if(this->send_msg()){
-        cout << _nickname << ": " << _buffer << endl;
-      }else{
+      if (!this->send_msg())
+      {
         this->detach("ERROR seding message to the server");
       }
     }
   }
 }
 
-void TCPclient::detach(string msg){
+void TCPclient::detach(string msg)
+{
 
-  if(msg != "")
+  if (msg != "")
     cout << msg << endl;
 
   close(_m_sock);

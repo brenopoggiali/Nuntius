@@ -7,17 +7,15 @@
 #include "client.h"
 
 class channel{
-    private:
+    public:
         std::string _name;
         int _max_clients;
-        std::map<std::string, TCPclient> _clients;
+        std::map<std::string, TCPclient*> _clients;
     
-    public:
         channel(std::string name);
-        //pensar sobre isso dps
-        //~channel();
+        ~channel();
 
-        bool add_client(TCPclient& client);
+        bool add_client(TCPclient* client);
         bool remove_client(std::string& nickname);
         bool can_recv_client();
         int get_num_clients();

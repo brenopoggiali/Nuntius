@@ -17,6 +17,7 @@
 
 #include "channel.h"
 #include "client.h"
+#include "exception.h"
 
 #define MAX_LENGTH 4096
 
@@ -26,7 +27,7 @@ private:
   int _server_sock;
   int _n;
   struct sockaddr_in _server_addr;
-  std::map<std::string, channel> _channels;
+  std::map<std::string, channel*> _channels;
 
 public:
   TCPserver(int port);
@@ -34,8 +35,9 @@ public:
   void recv_conn();
   bool exists_channel(std::string& name);
   void add_channel(std::string& name);
+  bool setup_client(TCPclient* client);
 
-  void* client_handler(TCPclient &client);
+  void* client_handler(TCPclient *client);
 };
 
 #endif

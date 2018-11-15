@@ -1,10 +1,16 @@
 #include "channel.h"
 
-channel::channel(std::string name) : _name(name), _max_clients(5){}
+channel::channel(std::string name) : _name(name), _max_clients(5){
+    std::cout << "channel criado: " << name << std::endl;
+}
 
-bool channel::add_client(TCPclient& client){
+channel::~channel() {
+    std::cout << "channel destruido: " << this->_name << std::endl;
+}
+
+bool channel::add_client(TCPclient* client){
     if(this->get_num_clients() < this->_max_clients){
-        this->_clients.insert(std::make_pair(client._nickname, client));
+        this->_clients.insert(std::make_pair(client->_nickname, client));
         return true;
     }
     return false;
@@ -20,10 +26,11 @@ bool channel::remove_client(std::string& nickname){
     return false;
 }
 
-void channel::send_msg(std::string& msg, std::string nickname){
+void channel::send_msg(std::string& msg, std::string client_nickname){
     for(auto it = this->_clients.begin(); it != this->_clients.end(); it++){
-        if(it->first != nickname){
-            it->second.send_msg(msg);
+        if(it->first != client_nickname){
+            std::string formated_msg = client_nickname + ": "+msg;
+            it->second->send_msg(formated_msg);
         }
     }
 }

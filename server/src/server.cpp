@@ -36,28 +36,31 @@ void TCPserver::recv_conn()
   while (true)
   {
 
-    TCPclient new_client = TCPclient();
+    //tenho q fazer uma abstracao para lancar exceptions dessas funcoes
+    TCPclient *new_client = new TCPclient();
 
-    socklen_t addr_size = sizeof(new_client._client_addr);
+    socklen_t addr_size = sizeof(new_client->_client_addr);
 
-    new_client._socket = accept(this->_server_sock, (struct sockaddr *)&new_client._client_addr, &addr_size);
-    std::cout << "[*] Conection received from " << inet_ntoa(new_client._client_addr.sin_addr) << std::endl;
+    new_client->_socket = accept(this->_server_sock, (struct sockaddr *)&new_client->_client_addr, &addr_size);
+    std::cout << "[*] Conection received from " << inet_ntoa(new_client->_client_addr.sin_addr) << std::endl;
 
-    std::thread t(&TCPserver::client_handler, this, std::ref(new_client));
+    std::thread t(&TCPserver::client_handler, this, new_client);
     t.detach();
   }
 }
 
-bool TCPserver::exists_channel(std::string& name){
+bool TCPserver::exists_channel(std::string &name)
+{
   return this->_channels.find(name) != this->_channels.end();
 }
 
-void TCPserver::add_channel(std::string& name){
-  channel new_channel = channel(name);
+void TCPserver::add_channel(std::string &name)
+{
+  channel *new_channel = new channel(name);
   this->_channels.insert(std::make_pair(name, new_channel));
 }
 
-void *TCPserver::client_handler(TCPclient &client)
+bool TCPserver::setup_client(TCPclient *client)
 {
 
   //first receives the nickname;servername
@@ -65,51 +68,80 @@ void *TCPserver::client_handler(TCPclient &client)
 
   try
   {
-    first_msg = client.recv_msg();
+    first_msg = client->recv_msg();
   }
   catch (const std::exception &e)
   {
-    //preciso fazer um logger dpois
-    std::cout << e.what() << std::endl;
+    throw Exception(e.what());
   }
 
   int pos = first_msg.find(";");
   std::string nickname = first_msg.substr(0, pos);
   std::string channel_name = first_msg.substr(pos + 1, first_msg.length());
 
-  client._nickname = nickname;
-  client._channel_name = channel_name;
   if (this->exists_channel(channel_name))
   {
-    if (this->_channels.find(client._channel_name)->second.can_recv_client())
-    {
-      this->_channels.find(client._channel_name)->second.add_client(client);
-    }
-    else
+    if (!this->_channels.find(channel_name)->second->can_recv_client())
+      return false;
+    
+    client->_nickname = nickname;
+    client->_channel_name = channel_name;
+    this->_channels.find(channel_name)->second->add_client(client);
+    return true;
+  }
+
+  //channel doesn't exist
+  client->_nickname = nickname;
+  client->_channel_name = channel_name;
+  this->add_channel(client->_channel_name);
+  this->_channels.find(client->_channel_name)->second->add_client(client);
+  return true;
+}
+
+void *TCPserver::client_handler(TCPclient *client)
+{
+
+  try
+  {
+    while (!this->setup_client(client))
     {
       //channel is full
       //depoist colocar em constantes essas mensagens de troca entre client e server
       std::string FULL = "FULL";
-      client.send_msg(FULL);
+      client->send_msg(FULL);
     }
   }
-  else
+  catch (const std::exception &e)
   {
-    //channel doesn't exist
-    this->add_channel(client._channel_name);
-    this->_channels.find(client._channel_name)->second.add_client(client);
+    delete client;
+    //preciso fazer um logger dpois
+    std::cout << e.what() << std::endl;
+    return 0;
   }
 
   while (true)
   {
     try
     {
-      std::string msg = client.recv_msg();
-      this->_channels.find(client._channel_name)->second.send_msg(msg, client._nickname);
+      std::string msg = client->recv_msg();
+      this->_channels.find(client->_channel_name)->second->send_msg(msg, client->_nickname);
     }
     catch (const std::exception &e)
-    { 
-      this->_channels.find(client._channel_name)->second.remove_client(client._nickname);
+    {
+      auto channel = this->_channels.find(client->_channel_name);
+      if (channel != this->_channels.end())
+      {
+
+        channel->second->remove_client(client->_nickname);
+        int num_clients = channel->second->get_num_clients();
+        if (num_clients <= 0)
+        {
+          delete channel->second;
+          this->_channels.erase(channel);
+        }
+      }
+
+      delete client;
       //preciso pensar em um melhor tratamento de errors
       std::cout << e.what() << std::endl;
       break;

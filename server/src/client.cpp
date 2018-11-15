@@ -1,7 +1,7 @@
 #include "client.h"
 
 TCPclient::TCPclient(){
-  std::cout << "cliente criado" << std::endl;
+  std::cout << "cliente criado " << std::endl;
 };
 
 TCPclient::~TCPclient(){
@@ -19,8 +19,8 @@ void TCPclient::send_msg(std::string& msg){
 std::string TCPclient::recv_msg(){
   this->clean();
   this->_n = recv(this->_socket, this->_buffer, MAX_LENGTH, 0);
-  if(this->_n < 0){
-    std::cout << strerror(errno) << " ERROR num " << errno << std::endl;
+  if(this->_n <= 0){
+    std::cout << strerror(errno) << " ERROR num: " << errno << std::endl;
     this->detach();
     throw Exception("Fail receiving message from client");
   }
