@@ -1,6 +1,4 @@
-#include "client/client.h"
-
-using namespace std;
+#include "client.h"
 
 int main(int argc, char *argv[]){
 
@@ -9,7 +7,7 @@ int main(int argc, char *argv[]){
     exit(EXIT_SUCCESS);
   }
 
-  TCPclient client(argv[1], atoi(argv[2]), argv[3]);
+  TCPclient client(std::string(argv[1]), atoi(argv[2]), std::string(argv[3]));
   client.connect_serv();
   client.handler();
 
