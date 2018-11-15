@@ -11,11 +11,12 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#include <netdb.h>
+#include <thread>
+
+#include "exception.h"
 
 //dps fazer enum
 #define MAXPACKETSIZE 4096
-#define INVALID_SOCKET -1
 #define SOCKET_ERROR -1
 
 using namespace std;
@@ -23,24 +24,25 @@ using namespace std;
 class TCPclient{
 
 private:
-  int _m_sock;
+  int _socket;
   int _port;
-  int _n;
-  string _addr;
+  std::string _serv_addr;
   string _nickname;
-  string _buffer;
+  char _buffer[MAXPACKETSIZE];
   string _channel_name;
   struct sockaddr_in _server_addr;
-  pthread_t _receiver_thread;
 
 public:
-  TCPclient(string addr, int port, string nickname, string channel_name);
+  TCPclient(std::string addr, int port, std::string nickname);
   void connect_serv();
   void handler();
-  void detach(string msg="");
-  bool send_msg();
+  void exit(std::string msg="");
+  void send_msg(std::string& msg);
+  std::string recv_msg();
+  bool connect_channel();
+  void get_channel();
 
-  static void *msg_receiver(void *a);
+  void *msg_receiver();
 
 };
 #endif
