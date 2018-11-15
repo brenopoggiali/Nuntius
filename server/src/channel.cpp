@@ -1,6 +1,6 @@
 #include "channel.h"
 
-channel::channel(std::string name) : _name(name), _max_clients(5){
+channel::channel(std::string name) : _name(name), _max_clients(MAX_CLIENTS){
     std::cout << "channel criado: " << name << std::endl;
 }
 

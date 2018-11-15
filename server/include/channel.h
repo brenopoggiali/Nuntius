@@ -6,6 +6,8 @@
 
 #include "client.h"
 
+#define MAX_CLIENTS 5
+
 class channel{
     public:
         std::string _name;
