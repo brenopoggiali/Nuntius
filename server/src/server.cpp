@@ -110,6 +110,8 @@ void *TCPserver::client_handler(TCPclient *client)
       std::string FULL = "FULL";
       client->send_msg(FULL);
     }
+    std::string OK = "OK";
+    client->send_msg(OK);
   }
   catch (const std::exception &e)
   {

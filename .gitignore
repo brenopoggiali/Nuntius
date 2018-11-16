@@ -2,3 +2,10 @@ client/build/
 server/build/
 client/main
 server/main
+client/src/*
+server/src/*
+!client/src/*.cpp
+!server/src/*.cpp
+.vscode/
+client/.vscode/
+server/.vscode/
