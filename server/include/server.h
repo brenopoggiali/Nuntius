@@ -11,38 +11,33 @@
 #include <netinet/in.h>
 #include <string.h>
 #include <arpa/inet.h>
-#include <pthread.h>
+#include <map>
+#include <memory>
+#include <thread>
 
-#define MAXPACKETSIZE 4096
+#include "channel.h"
+#include "client.h"
+#include "exception.h"
 
-using namespace std;
-
-struct arg_struct {
-
-  int arg1;
-  string arg2;
-};
+#define MAX_LENGTH 4096
 
 class TCPserver{
 
 private:
   int _server_sock;
-  int _client_sock;
   int _n;
-  int _pid;
   struct sockaddr_in _server_addr;
-  struct sockaddr_in _client_addr;
-  pthread_t _server_thread;
-  char _buffer[MAXPACKETSIZE];
+  std::map<std::string, channel*> _channels;
 
 public:
   TCPserver(int port);
+  ~TCPserver();
   void recv_conn();
-  void send_msg(string msg);
-  void detach();
-  void clean();
+  bool exists_channel(std::string& name);
+  void add_channel(std::string& name);
+  bool setup_client(TCPclient* client);
 
-  static void *client_handler(void *a);
+  void* client_handler(TCPclient *client);
 };
 
 #endif
