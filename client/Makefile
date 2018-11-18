@@ -1,3 +1,6 @@
+.PHONY: clean
 all:
 	cd src; \
-	g++ -I ../include *.cpp -o ../client -lpthread
+	g++ -std=c++11 -I ../include *.cpp -o ../client -lpthread
+
+
