@@ -13,6 +13,7 @@
 #include <netdb.h>
 #include <thread>
 #include <errno.h>
+#include <vector>
 
 #include "exception.h"
 
@@ -23,7 +24,10 @@
 
 using namespace std;
 
-class TCPclient{
+class Message;
+
+class Client
+{
 
 private:
   int _socket;
@@ -33,18 +37,19 @@ private:
   char _buffer[MAXPACKETSIZE];
   std::string _channel_name;
   struct sockaddr_in _server_addr;
+  Message *_message;
 
 public:
-  TCPclient(std::string addr, int port, std::string nickname);
+  Client(std::string addr, int port, std::string nickname);
   void connect_serv();
   void handler();
-  void exit_server(std::string msg="");
-  void send_msg(std::string& msg);
+  void exit_server(int error_code = -1, bool should_exit = false);
+  void send_msg(std::string &msg);
   std::string recv_msg();
   bool connect_channel();
   void get_channel();
+  void set_nickname(std::string &nickname);
 
   void *msg_receiver();
-
 };
 #endif
