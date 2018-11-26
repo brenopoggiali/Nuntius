@@ -37,7 +37,7 @@ void TCPserver::recv_conn()
   {
 
     //tenho q fazer uma abstracao para lancar exceptions dessas funcoes
-    TCPclient *new_client = new TCPclient();
+    User *new_client = new User();
 
     socklen_t addr_size = sizeof(new_client->_client_addr);
 
@@ -60,7 +60,7 @@ void TCPserver::add_channel(std::string &name)
   this->_channels.insert(std::make_pair(name, new_channel));
 }
 
-bool TCPserver::setup_client(TCPclient *client)
+bool TCPserver::setup_client(User *client)
 {
 
   //first receives the nickname;servername
@@ -83,7 +83,7 @@ bool TCPserver::setup_client(TCPclient *client)
   {
     if (!this->_channels.find(channel_name)->second->can_recv_client())
       return false;
-    
+
     client->_nickname = nickname;
     client->_channel_name = channel_name;
     this->_channels.find(channel_name)->second->add_client(client);
@@ -98,7 +98,7 @@ bool TCPserver::setup_client(TCPclient *client)
   return true;
 }
 
-void *TCPserver::client_handler(TCPclient *client)
+void *TCPserver::client_handler(User *client)
 {
 
   try

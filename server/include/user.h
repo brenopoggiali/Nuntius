@@ -14,7 +14,7 @@
 
 #define MAX_LENGTH 4096
 
-class TCPclient
+class User
 {
 
 public:
@@ -25,8 +25,8 @@ public:
   std::string _channel_name;
   char _buffer[MAX_LENGTH];
 
-  TCPclient();
-  ~TCPclient();
+  User();
+  ~User();
   void send_msg(std::string &msg);
   std::string recv_msg();
   void clean();
