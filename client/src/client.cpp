@@ -21,6 +21,11 @@ Client::Client(string serv_addr, int port, string nickname)
   _server_addr.sin_port = htons(_port);
 }
 
+Client::~Client()
+{
+  this->exit_server();
+}
+
 void Client::connect_serv()
 {
 
@@ -153,7 +158,7 @@ void Client::handler()
   }
 }
 
-void Client::exit_server(int error_code = -1, bool should_exit = false)
+void Client::exit_server(int error_code, bool should_exit)
 {
   if (error_code != -1)
   {

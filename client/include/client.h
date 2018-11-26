@@ -41,6 +41,7 @@ private:
 
 public:
   Client(std::string addr, int port, std::string nickname);
+  ~Client();
   void connect_serv();
   void handler();
   void exit_server(int error_code = -1, bool should_exit = false);

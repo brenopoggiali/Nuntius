@@ -3,11 +3,18 @@
 #include "client.h"
 
 //preciso destruir a classe message antes da classe client caso ocorra alguma falha na conexao
-Message::Message(Client *client) : _client(client) {}
+Message::Message(Client *client) : _client(client)
+{
+  this->_mapping["INVALID_INPUT"] = INVALID_INPUT;
+  this->_mapping["NICK"] = NICK;
+  this->_mapping["SUCCESS"] = SUCCESS;
+  this->_mapping["FAIL"] = FAIL;
+  this->_mapping["START_SPECIAL_HANDLING"] = START_SPECIAL_HANDLING;
+}
 
 Message::~Message() {}
 
-Message::inputs Message::map_input_string(std::string &input)
+Message::inputs Message::map_string_input(std::string &input)
 {
   auto it = this->_mapping.find(input);
   if (it == this->_mapping.end())
@@ -17,19 +24,26 @@ Message::inputs Message::map_input_string(std::string &input)
   return it->second;
 }
 
+std::string Message::map_input_string(inputs ipt)
+{
+  for (auto it = this->_mapping.begin(); it != this->_mapping.end(); it++)
+  {
+    if (it->second == ipt)
+    {
+      return it->first;
+    }
+  }
+  return "INVALID";
+}
+
 bool Message::is_valid_input(inputs &input, std::vector<std::string> &args)
 {
-
-  if (input == INVALID_INPUT)
-  {
-    return false;
-  }
-
   switch (input)
   {
   case NICK:
-    return args.size() < 1;
+    return args.size() == 1;
   }
+  return false;
 }
 
 void Message::handler_nick(std::string &input, std::vector<std::string> &args)
@@ -41,7 +55,7 @@ void Message::handler_nick(std::string &input, std::vector<std::string> &args)
 
   this->_client->send_msg(msg);
   std::string result = this->_client->recv_msg();
-  inputs mapped_result = this->map_input_string(result);
+  inputs mapped_result = this->map_string_input(result);
 
   if (mapped_result != SUCCESS)
   {
@@ -62,11 +76,17 @@ void Message::input_handler(std::string &input)
   std::string substr_input = first_arg.substr(1);
   args.erase(args.begin());
 
-  inputs ipt = this->map_input_string(substr_input);
+  inputs ipt = this->map_string_input(substr_input);
 
+  if (!this->is_valid_input(ipt, args))
+  {
+    throw InputException("Invalid Input");
+  }
+
+  std::string start_special_handling = this->map_input_string(START_SPECIAL_HANDLING);
   this->_client->send_msg(start_special_handling);
   std::string ans = this->_client->recv_msg();
-  inputs ans_input = this->map_input_string(ans);
+  inputs ans_input = this->map_string_input(ans);
 
   if (ans_input != SUCCESS)
   {
@@ -76,8 +96,7 @@ void Message::input_handler(std::string &input)
   switch (ipt)
   {
   case NICK:
-    // this->handler_nick(substr_input, args);
-    std::cout << "FUNCAO NICK" << std::endl;
+    this->handler_nick(substr_input, args);
     break;
   }
 }
