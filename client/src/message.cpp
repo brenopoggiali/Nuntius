@@ -17,12 +17,23 @@ Message::inputs Message::map_input_string(std::string &input)
   return it->second;
 }
 
+bool Message::is_valid_input(inputs &input, std::vector<std::string> &args)
+{
+
+  if (input == INVALID_INPUT)
+  {
+    return false;
+  }
+
+  switch (input)
+  {
+  case NICK:
+    return args.size() < 1;
+  }
+}
+
 void Message::handler_nick(std::string &input, std::vector<std::string> &args)
 {
-  if (args.size() < 1)
-  {
-    throw InputException("Invalid arguments");
-  }
 
   std::ostringstream oss;
   oss << input << " " << args[0];
@@ -34,44 +45,39 @@ void Message::handler_nick(std::string &input, std::vector<std::string> &args)
 
   if (mapped_result != SUCCESS)
   {
-    throw Exception("");
+    throw ServerResponseException("Fail changing nickname on server");
   }
 
   this->_client->set_nickname(args[0]);
 }
 
-void Message::input_handler(std::string &input, std::vector<std::string> args)
+void Message::input_handler(std::string &input)
 {
+  std::istringstream buf(input);
+  std::istream_iterator<std::string> beg(buf), end;
 
-  //converte string input to enum input
-  std::string substr_input = input.substr(1);
+  std::vector<std::string> args(beg, end);
+
+  auto first_arg = std::move(args.front());
+  std::string substr_input = first_arg.substr(1);
+  args.erase(args.begin());
+
   inputs ipt = this->map_input_string(substr_input);
-  if (ipt == INVALID_INPUT)
-  {
-    throw InputException("Inalid input");
-  }
 
-  //tells the server about our special handlig
   this->_client->send_msg(start_special_handling);
   std::string ans = this->_client->recv_msg();
   inputs ans_input = this->map_input_string(ans);
 
   if (ans_input != SUCCESS)
   {
-    throw Exception("Fail starting operation with server");
+    throw ServerResponseException("Fail starting operation with server");
   }
 
-  try
+  switch (ipt)
   {
-    switch (ipt)
-    {
-    case NICK:
-      this->handler_nick(substr_input, args);
-      break;
-    }
-  }
-  catch (std::exception &e)
-  {
-    throw Exception("Erro na funcao handler");
+  case NICK:
+    // this->handler_nick(substr_input, args);
+    std::cout << "FUNCAO NICK" << std::endl;
+    break;
   }
 }

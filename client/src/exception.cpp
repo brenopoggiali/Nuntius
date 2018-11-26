@@ -27,3 +27,10 @@ const char *InputException::what() const noexcept
 {
   return this->_msg.c_str();
 }
+
+ServerResponseException::ServerResponseException(std::string msg) : _msg(msg) {}
+
+const char *ServerResponseException::what() const noexcept
+{
+  return this->_msg.c_str();
+}

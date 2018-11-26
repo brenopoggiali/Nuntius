@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include <iterator>
 
 std::string start_special_handling = "START_SPECIAL_HANDLING";
 
@@ -28,9 +29,10 @@ private:
 public:
   Message(Client *client);
   ~Message();
-  void input_handler(std::string &input, std::vector<string>);
+  void input_handler(std::string &input);
   inputs map_input_string(std::string &input);
   void handler_nick(std::string &input, std::vector<std::string> &args);
+  bool is_valid_input(inputs &input, std::vector<std::string> &args);
 };
 
 #endif

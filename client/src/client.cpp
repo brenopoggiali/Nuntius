@@ -95,6 +95,22 @@ void Client::set_nickname(std::string &nickname)
   this->_nickname = nickname;
 }
 
+void Client::special_input_handler(std::string &input)
+{
+  try
+  {
+    this->_message->input_handler(input);
+  }
+  catch (InputException &e)
+  {
+    std::cout << e.what() << std::endl;
+  }
+  catch (ServerResponseException &e)
+  {
+    std::cout << e.what() << std::endl;
+  }
+}
+
 void Client::handler()
 {
   this->get_channel();
@@ -105,8 +121,7 @@ void Client::handler()
     this->get_channel();
   }
 
-  std::cout << "[*] Connected on channel " << this->_channel_name << std::endl
-            << std::endl;
+  std::cout << "[*] Connected on channel " << this->_channel_name << std::endl;
 
   std::thread t(&Client::msg_receiver, this);
   t.detach();
@@ -122,12 +137,18 @@ void Client::handler()
     else
     {
       //aq tenho q implementar sair do server dps e nao sair do programa
-      if (buffer == "exit")
+      if (buffer == "#EXIT")
       {
         this->exit_server(-1, true);
       }
-
-      this->send_msg(buffer);
+      else if (buffer[0] == '#')
+      {
+        this->special_input_handler(buffer);
+      }
+      else
+      {
+        this->send_msg(buffer);
+      }
     }
   }
 }

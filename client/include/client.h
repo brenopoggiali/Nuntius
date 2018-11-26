@@ -49,6 +49,7 @@ public:
   bool connect_channel();
   void get_channel();
   void set_nickname(std::string &nickname);
+  void special_input_handler(std::string &input);
 
   void *msg_receiver();
 };

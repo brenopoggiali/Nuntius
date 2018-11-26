@@ -44,4 +44,14 @@ public:
   virtual const char *what() const noexcept override;
 };
 
+class ServerResponseException : public std::exception
+{
+
+  std::string _msg;
+
+public:
+  ServerResponseException(std::string msg);
+  virtual const char *what() const noexcept override;
+};
+
 #endif
