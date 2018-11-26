@@ -14,6 +14,9 @@
 #include <map>
 #include <memory>
 #include <thread>
+#include <vector>
+#include <sstream>
+#include <iterator>
 
 #include "channel.h"
 #include "user.h"
@@ -29,6 +32,15 @@ private:
   int _n;
   struct sockaddr_in _server_addr;
   std::map<std::string, channel *> _channels;
+  typedef enum
+  {
+    INVALID_INPUT = -1,
+    NICK,
+    START_SPECIAL_HANDLING,
+    SUCCESS,
+    FAIL
+  } inputs;
+  std::map<std::string, inputs> _mapping;
 
 public:
   TCPserver(int port);
@@ -37,6 +49,10 @@ public:
   bool exists_channel(std::string &name);
   void add_channel(std::string &name);
   bool setup_client(User *client);
+  std::string map_input_string(inputs ipt);
+  inputs map_string_input(std::string &input);
+  void special_input_handler(User *client);
+  void change_user_nickname(User *client, std::string &new_nickname);
 
   void *client_handler(User *client);
 };

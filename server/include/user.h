@@ -31,6 +31,7 @@ public:
   std::string recv_msg();
   void clean();
   void detach();
+  void set_nickname(std::string nickname);
 };
 
 #endif

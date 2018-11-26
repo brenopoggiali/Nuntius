@@ -3,6 +3,12 @@
 TCPserver::TCPserver(int port)
 {
 
+  this->_mapping["INVALID_INPUT"] = INVALID_INPUT;
+  this->_mapping["NICK"] = NICK;
+  this->_mapping["SUCCESS"] = SUCCESS;
+  this->_mapping["FAIL"] = FAIL;
+  this->_mapping["START_SPECIAL_HANDLING"] = START_SPECIAL_HANDLING;
+
   _server_sock = socket(AF_INET, SOCK_STREAM, 0);
 
   memset(&_server_addr, 0, sizeof(_server_addr));
@@ -98,6 +104,65 @@ bool TCPserver::setup_client(User *client)
   return true;
 }
 
+TCPserver::inputs TCPserver::map_string_input(std::string &input)
+{
+  auto it = this->_mapping.find(input);
+  if (it == this->_mapping.end())
+  {
+    return INVALID_INPUT;
+  }
+  return it->second;
+}
+
+std::string TCPserver::map_input_string(inputs ipt)
+{
+  for (auto it = this->_mapping.begin(); it != this->_mapping.end(); it++)
+  {
+    if (it->second == ipt)
+    {
+      return it->first;
+    }
+  }
+  return "INVALID";
+}
+
+void TCPserver::change_user_nickname(User *client, std::string &new_nickname)
+{
+  auto it = this->_channels.find(client->_channel_name);
+  it->second->remove_client(client->_nickname);
+
+  client->set_nickname(new_nickname);
+  it->second->add_client(client);
+
+  std::string success = this->map_input_string(SUCCESS);
+  client->send_msg(success);
+}
+
+//[TO_THINK]: aqui estou assumindo que os dados recebidos do cliente sao confiaveis e validos, pois faco a validacao no client... isso pode ser perigoso? pode dar bug?
+void TCPserver::special_input_handler(User *client)
+{
+  std::string success = this->map_input_string(SUCCESS);
+  client->send_msg(success);
+
+  std::string input = client->recv_msg();
+
+  std::istringstream buf(input);
+  std::istream_iterator<std::string> beg(buf), end;
+
+  std::vector<std::string> args(beg, end);
+
+  auto first_arg = std::move(args.front());
+  args.erase(args.begin());
+
+  inputs parsed_input = this->map_string_input(first_arg);
+
+  switch (parsed_input)
+  {
+  case NICK:
+    this->change_user_nickname(client, args[0]);
+  }
+}
+
 void *TCPserver::client_handler(User *client)
 {
 
@@ -126,7 +191,14 @@ void *TCPserver::client_handler(User *client)
     try
     {
       std::string msg = client->recv_msg();
-      this->_channels.find(client->_channel_name)->second->send_msg(msg, client->_nickname);
+      if (msg == this->map_input_string(START_SPECIAL_HANDLING))
+      {
+        this->special_input_handler(client);
+      }
+      else
+      {
+        this->_channels.find(client->_channel_name)->second->send_msg(msg, client->_nickname);
+      }
     }
     catch (const std::exception &e)
     {

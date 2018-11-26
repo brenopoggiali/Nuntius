@@ -2,12 +2,12 @@
 
 User::User()
 {
-  std::cout << "cliente criado " << std::endl;
+  std::cout << "user criado " << std::endl;
 };
 
 User::~User()
 {
-  std::cout << "cliente destruido" << std::endl;
+  std::cout << "user destruido" << std::endl;
 };
 
 void User::send_msg(std::string &msg)
@@ -41,4 +41,9 @@ void User::detach()
 void User::clean()
 {
   memset(this->_buffer, 0, MAX_LENGTH);
+}
+
+void User::set_nickname(std::string nickname)
+{
+  this->_nickname = nickname;
 }
