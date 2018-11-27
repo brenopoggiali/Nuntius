@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Client::Client(string serv_addr, int port, string nickname)
+Client::Client(std::string serv_addr, int port, std::string nickname, std::string channel_name)
 {
   if (port < 1 || port > 65535)
   {
@@ -12,6 +12,7 @@ Client::Client(string serv_addr, int port, string nickname)
   }
   this->_port = port;
   this->_nickname = nickname;
+  this->_channel_name = channel_name;
   this->_server_ip = serv_addr;
   this->_message = new Message(this);
 
@@ -46,8 +47,7 @@ void Client::connect_serv()
     exit(EXIT_SUCCESS);
   }
 
-  std::cout << "[*] Connection established, waiting for incoming messages..." << std::endl
-            << std::endl;
+  std::cout << "[*] Connection established, waiting for incoming messages..." << std::endl;
 }
 
 void Client::send_msg(std::string &msg)
@@ -74,25 +74,23 @@ std::string Client::recv_msg()
   return std::string(this->_buffer);
 }
 
-bool Client::connect_channel()
+void Client::connect_channel()
 {
-  std::string FULL = "FULL";
+  std::string channel_is_full = this->_message->map_input_string(Message::CHANNEL_IS_FULL);
+  std::string nickname_in_use = this->_message->map_input_string(Message::NICKNAME_IN_USE);
   string client_info = this->_nickname + ";" + this->_channel_name;
 
   this->send_msg(client_info);
   std::string received_msg = this->recv_msg();
   //colocar em um enum depois
-  if (received_msg == FULL)
+  if (received_msg == channel_is_full)
   {
-    return false;
+    throw Exception("Channel is Full");
   }
-  return true;
-}
-
-void Client::get_channel()
-{
-  std::cout << "Channel: " << std::endl;
-  std::cin >> this->_channel_name;
+  if (received_msg == nickname_in_use)
+  {
+    throw Exception("Nickname already in use");
+  }
 }
 
 void Client::set_nickname(std::string &nickname)
@@ -118,12 +116,14 @@ void Client::special_input_handler(std::string &input)
 
 void Client::handler()
 {
-  this->get_channel();
-
-  while (!this->connect_channel())
+  try
   {
-    std::cout << "Channel inválido!" << std::endl;
-    this->get_channel();
+    this->connect_channel();
+  }
+  catch (Exception &e)
+  {
+    std::cout << e.what() << std::endl;
+    exit(EXIT_SUCCESS);
   }
 
   std::cout << "[*] Connected on channel " << this->_channel_name << std::endl;

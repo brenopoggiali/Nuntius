@@ -38,6 +38,8 @@ private:
     NICK,
     START_SPECIAL_HANDLING,
     SUCCESS,
+    NICKNAME_IN_USE,
+    CHANNEL_IS_FULL,
     FAIL
   } inputs;
   std::map<std::string, inputs> _mapping;
@@ -53,6 +55,7 @@ public:
   inputs map_string_input(std::string &input);
   void special_input_handler(User *client);
   void change_user_nickname(User *client, std::string &new_nickname);
+  bool exists_nickname(std::string &nickname);
 
   void *client_handler(User *client);
 };

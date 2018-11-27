@@ -13,7 +13,7 @@ class Client;
 class Message
 {
 
-private:
+public:
   Client *_client;
   typedef enum
   {
@@ -21,11 +21,12 @@ private:
     NICK,
     START_SPECIAL_HANDLING,
     SUCCESS,
-    FAIL
+    FAIL,
+    NICKNAME_IN_USE,
+    CHANNEL_IS_FULL
   } inputs;
   std::map<std::string, inputs> _mapping;
 
-public:
   Message(Client *client);
   ~Message();
   void input_handler(std::string &input);

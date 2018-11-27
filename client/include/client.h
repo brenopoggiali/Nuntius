@@ -40,15 +40,14 @@ private:
   Message *_message;
 
 public:
-  Client(std::string addr, int port, std::string nickname);
+  Client(std::string addr, int port, std::string nickname, std::string channel_name);
   ~Client();
   void connect_serv();
   void handler();
   void exit_server(int error_code = -1, bool should_exit = false);
   void send_msg(std::string &msg);
   std::string recv_msg();
-  bool connect_channel();
-  void get_channel();
+  void connect_channel();
   void set_nickname(std::string &nickname);
   void special_input_handler(std::string &input);
 

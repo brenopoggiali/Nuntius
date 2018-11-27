@@ -9,6 +9,8 @@ Message::Message(Client *client) : _client(client)
   this->_mapping["NICK"] = NICK;
   this->_mapping["SUCCESS"] = SUCCESS;
   this->_mapping["FAIL"] = FAIL;
+  this->_mapping["CHANNEL_IS_FULL"] = CHANNEL_IS_FULL;
+  this->_mapping["NICKNAME_IN_USE"] = NICKNAME_IN_USE;
   this->_mapping["START_SPECIAL_HANDLING"] = START_SPECIAL_HANDLING;
 }
 
@@ -49,20 +51,27 @@ bool Message::is_valid_input(inputs &input, std::vector<std::string> &args)
 void Message::handler_nick(std::string &input, std::vector<std::string> &args)
 {
 
+  //#NICK new_nick
   std::ostringstream oss;
   oss << input << " " << args[0];
   std::string msg = oss.str();
 
   this->_client->send_msg(msg);
   std::string result = this->_client->recv_msg();
+
   inputs mapped_result = this->map_string_input(result);
 
-  if (mapped_result != SUCCESS)
+  if (mapped_result == NICKNAME_IN_USE)
+  {
+    throw ServerResponseException("Nickname already in use");
+  }
+  else if (mapped_result != SUCCESS)
   {
     throw ServerResponseException("Fail changing nickname on server");
   }
 
   this->_client->set_nickname(args[0]);
+  std::cout << "Nickname changed! Your new nickname is: " << args[0] << std::endl;
 }
 
 void Message::input_handler(std::string &input)
