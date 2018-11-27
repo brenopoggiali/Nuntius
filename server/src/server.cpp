@@ -3,6 +3,14 @@
 TCPserver::TCPserver(int port)
 {
 
+  this->_mapping["INVALID_INPUT"] = INVALID_INPUT;
+  this->_mapping["NICK"] = NICK;
+  this->_mapping["SUCCESS"] = SUCCESS;
+  this->_mapping["NICKNAME_IN_USE"] = NICKNAME_IN_USE;
+  this->_mapping["CHANNEL_IS_FULL"] = CHANNEL_IS_FULL;
+  this->_mapping["FAIL"] = FAIL;
+  this->_mapping["START_SPECIAL_HANDLING"] = START_SPECIAL_HANDLING;
+
   _server_sock = socket(AF_INET, SOCK_STREAM, 0);
 
   memset(&_server_addr, 0, sizeof(_server_addr));
@@ -37,7 +45,7 @@ void TCPserver::recv_conn()
   {
 
     //tenho q fazer uma abstracao para lancar exceptions dessas funcoes
-    TCPclient *new_client = new TCPclient();
+    User *new_client = new User();
 
     socklen_t addr_size = sizeof(new_client->_client_addr);
 
@@ -60,30 +68,34 @@ void TCPserver::add_channel(std::string &name)
   this->_channels.insert(std::make_pair(name, new_channel));
 }
 
-bool TCPserver::setup_client(TCPclient *client)
+bool TCPserver::setup_client(User *client)
 {
 
-  //first receives the nickname;servername
+  //first receives the "nickname;servername"
   std::string first_msg;
 
-  try
-  {
-    first_msg = client->recv_msg();
-  }
-  catch (const std::exception &e)
-  {
-    throw Exception(e.what());
-  }
+  first_msg = client->recv_msg();
 
   int pos = first_msg.find(";");
   std::string nickname = first_msg.substr(0, pos);
   std::string channel_name = first_msg.substr(pos + 1, first_msg.length());
 
+  if (this->exists_nickname(nickname))
+  {
+    std::string nickname_in_use = this->map_input_string(NICKNAME_IN_USE);
+    client->send_msg(nickname_in_use);
+    return false;
+  }
+
   if (this->exists_channel(channel_name))
   {
     if (!this->_channels.find(channel_name)->second->can_recv_client())
+    {
+      std::string full = this->map_input_string(CHANNEL_IS_FULL);
+      client->send_msg(full);
       return false;
-    
+    }
+
     client->_nickname = nickname;
     client->_channel_name = channel_name;
     this->_channels.find(channel_name)->second->add_client(client);
@@ -98,17 +110,94 @@ bool TCPserver::setup_client(TCPclient *client)
   return true;
 }
 
-void *TCPserver::client_handler(TCPclient *client)
+TCPserver::inputs TCPserver::map_string_input(std::string &input)
+{
+  auto it = this->_mapping.find(input);
+  if (it == this->_mapping.end())
+  {
+    return INVALID_INPUT;
+  }
+  return it->second;
+}
+
+std::string TCPserver::map_input_string(inputs ipt)
+{
+  for (auto it = this->_mapping.begin(); it != this->_mapping.end(); it++)
+  {
+    if (it->second == ipt)
+    {
+      return it->first;
+    }
+  }
+  return "INVALID";
+}
+
+bool TCPserver::exists_nickname(std::string &nickname)
+{
+  for (auto it_channels = this->_channels.begin(); it_channels != this->_channels.end(); it_channels++)
+  {
+    if (it_channels->second->_clients.find(nickname) != it_channels->second->_clients.end())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+void TCPserver::change_user_nickname(User *client, std::string &new_nickname)
+{
+
+  if (this->exists_nickname(new_nickname))
+  {
+    std::string nickname_in_use = this->map_input_string(NICKNAME_IN_USE);
+    client->send_msg(nickname_in_use);
+    return;
+  }
+
+  auto it = this->_channels.find(client->_channel_name);
+  it->second->remove_client(client->_nickname);
+
+  client->set_nickname(new_nickname);
+  it->second->add_client(client);
+
+  std::string success = this->map_input_string(SUCCESS);
+  client->send_msg(success);
+}
+
+//[TO_THINK]: aqui estou assumindo que os dados recebidos do cliente sao confiaveis e validos, pois faco a validacao no client... isso pode ser perigoso? pode dar bug?
+void TCPserver::special_input_handler(User *client)
+{
+  std::string success = this->map_input_string(SUCCESS);
+  client->send_msg(success);
+
+  std::string input = client->recv_msg();
+
+  std::istringstream buf(input);
+  std::istream_iterator<std::string> beg(buf), end;
+
+  std::vector<std::string> args(beg, end);
+
+  auto first_arg = std::move(args.front());
+  args.erase(args.begin());
+
+  inputs parsed_input = this->map_string_input(first_arg);
+
+  switch (parsed_input)
+  {
+  case NICK:
+    this->change_user_nickname(client, args[0]);
+  }
+}
+
+void *TCPserver::client_handler(User *client)
 {
 
   try
   {
-    while (!this->setup_client(client))
+    if (!this->setup_client(client))
     {
-      //channel is full
-      //depoist colocar em constantes essas mensagens de troca entre client e server
-      std::string FULL = "FULL";
-      client->send_msg(FULL);
+      //testar
+      throw Exception("Fail setting up the client");
     }
     std::string OK = "OK";
     client->send_msg(OK);
@@ -116,7 +205,6 @@ void *TCPserver::client_handler(TCPclient *client)
   catch (const std::exception &e)
   {
     delete client;
-    //preciso fazer um logger dpois
     std::cout << e.what() << std::endl;
     return 0;
   }
@@ -126,7 +214,14 @@ void *TCPserver::client_handler(TCPclient *client)
     try
     {
       std::string msg = client->recv_msg();
-      this->_channels.find(client->_channel_name)->second->send_msg(msg, client->_nickname);
+      if (msg == this->map_input_string(START_SPECIAL_HANDLING))
+      {
+        this->special_input_handler(client);
+      }
+      else
+      {
+        this->_channels.find(client->_channel_name)->second->send_msg(msg, client->_nickname);
+      }
     }
     catch (const std::exception &e)
     {
@@ -144,7 +239,6 @@ void *TCPserver::client_handler(TCPclient *client)
       }
 
       delete client;
-      //preciso pensar em um melhor tratamento de errors
       std::cout << e.what() << std::endl;
       break;
     }
