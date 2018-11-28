@@ -3,4 +3,4 @@
 
 TEST_CASE("Test User Constructor"){
 	CHECK_NOTHROW(User u());
-}
+} 

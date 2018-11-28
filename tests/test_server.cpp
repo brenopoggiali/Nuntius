@@ -3,4 +3,4 @@
 
 TEST_CASE("Test Server Constructor"){
 	CHECK_NOTHROW(Server s(5555));
-}
+} 
