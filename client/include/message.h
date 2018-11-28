@@ -19,6 +19,7 @@ public:
   {
     INVALID_INPUT = -1,
     NICK,
+    JOIN,
     START_SPECIAL_HANDLING,
     SUCCESS,
     FAIL,
@@ -29,11 +30,12 @@ public:
 
   Message(Client *client);
   ~Message();
-  void input_handler(std::string &input);
   std::string map_input_string(inputs ipt);
   inputs map_string_input(std::string &input);
-  void handler_nick(std::string &input, std::vector<std::string> &args);
   bool is_valid_input(inputs &input, std::vector<std::string> &args);
+  void input_handler(std::string &input);
+  void handler_nick(std::string &input, std::vector<std::string> &args);
+  void handler_join(std::string &input, std::vector<std::string> &args);
 };
 
 #endif

@@ -5,6 +5,7 @@ TCPserver::TCPserver(int port)
 
   this->_mapping["INVALID_INPUT"] = INVALID_INPUT;
   this->_mapping["NICK"] = NICK;
+  this->_mapping["JOIN"] = JOIN;
   this->_mapping["SUCCESS"] = SUCCESS;
   this->_mapping["NICKNAME_IN_USE"] = NICKNAME_IN_USE;
   this->_mapping["CHANNEL_IS_FULL"] = CHANNEL_IS_FULL;
@@ -86,27 +87,14 @@ bool TCPserver::setup_client(User *client)
     client->send_msg(nickname_in_use);
     return false;
   }
-
-  if (this->exists_channel(channel_name))
-  {
-    if (!this->_channels.find(channel_name)->second->can_recv_client())
-    {
-      std::string full = this->map_input_string(CHANNEL_IS_FULL);
-      client->send_msg(full);
-      return false;
-    }
-
-    client->_nickname = nickname;
-    client->_channel_name = channel_name;
-    this->_channels.find(channel_name)->second->add_client(client);
-    return true;
-  }
-
-  //channel doesn't exist
   client->_nickname = nickname;
-  client->_channel_name = channel_name;
-  this->add_channel(client->_channel_name);
-  this->_channels.find(client->_channel_name)->second->add_client(client);
+
+  if (!this->join_channel(client, channel_name))
+  {
+    std::string full = this->map_input_string(CHANNEL_IS_FULL);
+    client->send_msg(full);
+    return false;
+  }
   return true;
 }
 
@@ -142,6 +130,50 @@ bool TCPserver::exists_nickname(std::string &nickname)
     }
   }
   return false;
+}
+
+bool TCPserver::join_channel(User *client, std::string &channel_name)
+{
+  if (this->exists_channel(channel_name))
+  {
+    if (!this->_channels.find(channel_name)->second->can_recv_client())
+    {
+      return false;
+    }
+
+    client->_channel_name = channel_name;
+    this->_channels.find(channel_name)->second->add_client(client);
+    return true;
+  }
+
+  //channel doesn't exist
+  client->_channel_name = channel_name;
+  this->add_channel(client->_channel_name);
+  this->_channels.find(client->_channel_name)->second->add_client(client);
+  return true;
+}
+
+void TCPserver::change_user_channel(User *client, std::string &new_channel)
+{
+  std::string old_channel = client->_channel_name;
+  if (!this->join_channel(client, new_channel))
+  {
+    std::string full = this->map_input_string(CHANNEL_IS_FULL);
+    client->send_msg(full);
+    return;
+  }
+  auto channel = this->_channels.find(old_channel);
+  channel->second->remove_client(client->_nickname);
+
+  int num_clients = channel->second->get_num_clients();
+  if (num_clients <= 0)
+  {
+    delete channel->second;
+    this->_channels.erase(channel);
+  }
+
+  std::string success = this->map_input_string(SUCCESS);
+  client->send_msg(success);
 }
 
 void TCPserver::change_user_nickname(User *client, std::string &new_nickname)
@@ -186,6 +218,8 @@ void TCPserver::special_input_handler(User *client)
   {
   case NICK:
     this->change_user_nickname(client, args[0]);
+  case JOIN:
+    this->change_user_channel(client, args[0]);
   }
 }
 
