@@ -7,6 +7,7 @@ Message::Message(Client *client) : _client(client)
 {
   this->_mapping["INVALID_INPUT"] = INVALID_INPUT;
   this->_mapping["NICK"] = NICK;
+  this->_mapping["JOIN"] = JOIN;
   this->_mapping["SUCCESS"] = SUCCESS;
   this->_mapping["FAIL"] = FAIL;
   this->_mapping["CHANNEL_IS_FULL"] = CHANNEL_IS_FULL;
@@ -44,8 +45,35 @@ bool Message::is_valid_input(inputs &input, std::vector<std::string> &args)
   {
   case NICK:
     return args.size() == 1;
+  case JOIN:
+    return args.size() == 1;
   }
   return false;
+}
+
+void Message::handler_join(std::string &input, std::vector<std::string> &args)
+{
+  //#JOIN new_channel
+  std::ostringstream oss;
+  oss << input << " " << args[0];
+  std::string msg = oss.str();
+
+  this->_client->send_msg(msg);
+  std::string result = this->_client->recv_msg();
+
+  inputs mapped_result = this->map_string_input(result);
+
+  if (mapped_result == CHANNEL_IS_FULL)
+  {
+    throw ServerResponseException("Channel is full");
+  }
+  else if (mapped_result != SUCCESS)
+  {
+    throw ServerResponseException("Fail joining channel on server");
+  }
+
+  this->_client->set_channel_name(args[0]);
+  std::cout << "Joined successfuly! You now are on channel: " << args[0] << std::endl;
 }
 
 void Message::handler_nick(std::string &input, std::vector<std::string> &args)
@@ -106,6 +134,9 @@ void Message::input_handler(std::string &input)
   {
   case NICK:
     this->handler_nick(substr_input, args);
+    break;
+  case JOIN:
+    this->handler_join(substr_input, args);
     break;
   }
 }

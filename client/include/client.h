@@ -49,6 +49,7 @@ public:
   std::string recv_msg();
   void connect_channel();
   void set_nickname(std::string &nickname);
+  void set_channel_name(std::string &channel_name);
   void special_input_handler(std::string &input);
 
   void *msg_receiver();
