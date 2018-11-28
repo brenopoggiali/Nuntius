@@ -36,6 +36,7 @@ private:
   {
     INVALID_INPUT = -1,
     NICK,
+    JOIN,
     START_SPECIAL_HANDLING,
     SUCCESS,
     NICKNAME_IN_USE,
@@ -51,11 +52,13 @@ public:
   bool exists_channel(std::string &name);
   void add_channel(std::string &name);
   bool setup_client(User *client);
+  bool exists_nickname(std::string &nickname);
+  bool join_channel(User *client, std::string &channel_name);
   std::string map_input_string(inputs ipt);
   inputs map_string_input(std::string &input);
   void special_input_handler(User *client);
   void change_user_nickname(User *client, std::string &new_nickname);
-  bool exists_nickname(std::string &nickname);
+  void change_user_channel(User *client, std::string &new_channel);
 
   void *client_handler(User *client);
 };

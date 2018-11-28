@@ -93,6 +93,11 @@ void Client::connect_channel()
   }
 }
 
+void Client::set_channel_name(std::string &channel_name)
+{
+  this->_channel_name = channel_name;
+}
+
 void Client::set_nickname(std::string &nickname)
 {
   this->_nickname = nickname;
