@@ -2,5 +2,5 @@
 #include "doctest.h"
 
 TEST_CASE("Test Message Methods"){
-
+	
 }
