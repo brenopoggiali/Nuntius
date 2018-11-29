@@ -1,4 +1,10 @@
 .PHONY: clean
+
+test:
+	cd build; \
+	g++ -std=c++11 -I ../client/include -I ../server/include -I ../third_party/ ../tests/*.cpp -o  -lpthread -fprofile-arcs -ftest-coverage -g -O0
+
+
 all:
 	# Building server
 	cd server; \
