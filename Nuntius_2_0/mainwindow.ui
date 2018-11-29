@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>774</width>
+    <height>436</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Menu</string>
+  </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color: rgb(255, 85, 33);</string>
+  </property>
+  <widget class="QWidget" name="centralWidget">
+   <widget class="QLabel" name="label_logo">
+    <property name="geometry">
+     <rect>
+      <x>340</x>
+      <y>70</y>
+      <width>80</width>
+      <height>80</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>150</y>
+      <width>231</width>
+      <height>111</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Sawasdee</family>
+      <pointsize>48</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:white</string>
+    </property>
+    <property name="text">
+     <string>Nuntius</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_2">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>240</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>NSimSun</family>
+      <pointsize>16</pointsize>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">color:white;</string>
+    </property>
+    <property name="text">
+     <string>BETA</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_logo_2">
+    <property name="geometry">
+     <rect>
+      <x>520</x>
+      <y>0</y>
+      <width>251</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_logo_3">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>251</width>
+      <height>401</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>300</y>
+      <width>131</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Segoe UI Light</family>
+      <pointsize>20</pointsize>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#pushButton{
+border-top:0px;
+border-left:0px;
+border-right:0px;
+border-bottom:0px;
+color:white;
+}
+
+QPushButton#pushButton:hover{
+border-bottom:1px solid white;
+
+}
+
+QPushButton#pushButton:pressed{
+background-color:white;
+color:darkorange
+
+}
+</string>
+    </property>
+    <property name="text">
+     <string>Iniciar</string>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menuBar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>774</width>
+     <height>25</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QToolBar" name="mainToolBar">
+   <attribute name="toolBarArea">
+    <enum>TopToolBarArea</enum>
+   </attribute>
+   <attribute name="toolBarBreak">
+    <bool>false</bool>
+   </attribute>
+  </widget>
+  <widget class="QStatusBar" name="statusBar"/>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
