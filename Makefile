@@ -2,7 +2,7 @@
 
 test:
 	cd build; \
-	g++ -std=c++11 -I ../client/include -I ../server/include -I ../third_party/ ../tests/*.cpp -o  -lpthread -fprofile-arcs -ftest-coverage -g -O0
+	clang++ -std=c++11 -stdlib=libc++ -I ../client/include -I ../server/include -I ../third_party/ ../tests/*.cpp -o  -lpthread -fprofile-arcs -ftest-coverage -g -O0
 
 
 all:
