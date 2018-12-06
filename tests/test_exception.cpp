@@ -1,5 +1,6 @@
 #include "server.h"
 #include "client.h"
+#include "user.h"
 #include "exception.h"
 #include "doctest.h"
 
