@@ -1,0 +1,24 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>img/Nuntius_main.jpg</file>
+        <file>img/NM3.png</file>
+        <file>img/NM2.jpg</file>
+        <file>img/NL2.png</file>
+        <file>img/NL.png</file>
+        <file>img/icon_c.png</file>
+        <file>img/icon_b.png</file>
+        <file>img/icon_a.png</file>
+        <file>img/box_icon.png</file>
+        <file>img/back_msg_3.png</file>
+        <file>img/aux_a_2.png</file>
+        <file>img/aux_a.png</file>
+        <file>img/back_4.png</file>
+        <file>img/background.png</file>
+        <file>img/exit_icon.png</file>
+        <file>img/exit_icon_2.png</file>
+        <file>img/back_5.png</file>
+        <file>img/msg_2.png</file>
+        <file>img/msg_1.png</file>
+        <file>img/msg_3.png</file>
+    </qresource>
+</RCC>
