@@ -17,6 +17,7 @@ Para utilizar o chat basta seguir os passos abaixo na respectiva ordem:
       ./client <IP_SERVER> <NUMERO_DA_PORTA> <NICKNAME> <CHANNEL_NAME>
       
 Obs: para ip local, basta usar 127.0.0.1
+
 Obs 2: você deve rodar o código acima uma vez para cada cliente
 
 # Workflow
