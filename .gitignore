@@ -9,3 +9,5 @@ server/src/*
 .vscode/
 client/.vscode/
 server/.vscode/
+*.gcno
+*.gcda
