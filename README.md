@@ -2,6 +2,23 @@
 
 Implementacao simples de um chat usando o protocolo de comunicação IRC (Internet Relay Chat)
 
+# How to use
+Para utilizar o chat basta seguir os passos abaixo na respectiva ordem:
+* Compilar o programa. Para isso, basta entrar na pasta principal e executar o código abaixo
+    
+      make
+
+* Habilitar o server, executando o código abaixo dentro da pasta '/server/build':
+    
+      ./server <NUMERO_DA_PORTA>
+
+* Criar quantos clientes desejar, executando o código abaixo dentro da pasta '/client/build':
+    
+      ./client <IP_SERVER> <NUMERO_DA_PORTA> <NICKNAME> <CHANNEL_NAME>
+      
+Obs: para ip local, basta usar 127.0.0.1
+Obs 2: você deve rodar o código acima uma vez para cada cliente
+
 # Workflow
 
 Adotaremos o seguinte processo para desenvolvimento do projeto:
